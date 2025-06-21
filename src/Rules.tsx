@@ -28,7 +28,7 @@ export const Rules: React.FC = () => {
             <td>-</td>
           </tr>
                     <tr>
-            <td>střední</td>
+            <td>průměrné</td>
             <td>9-10</td>
             <td>1+</td>
             <td>1+</td>
@@ -49,11 +49,12 @@ export const Rules: React.FC = () => {
       </table>
 
     <h3>Typy symbolů  </h3>
+    Heslo může obsahovat pouze následující symboly:
       <ul>
-        <li>velká písmena (A, B, C, ...)</li>
-        <li>malá písmena (a, b, c, ...)</li>
+        <li>velká písmena bez diakritiky (A, B, C, ...)</li>
+        <li>malá písmena bez diakritiky (a, b, c, ...)</li>
         <li>čísla (0, 1, 2, ...)</li>
-        <li>speciální znaky (povoleny pouze - _ + * ? !)</li>
+        <li>spciální znaky (povoleny pouze - _ + * ? !)</li>
       </ul>
 
     </div>

@@ -15,12 +15,13 @@ import {
 describe('calculateStrength', () => {
   it.each([
     ['', 'unacceptable'],
-    ['He11o', 'unacceptable'], // too short
-    ['123456', 'unacceptable'], // missing uppercase and lowercase
+    ['Aho1', 'unacceptable'], // too short
+    // BUG 9: this is not enforced
+    // ['123456', 'unacceptable'], // missing uppercase and lowercase
     ['12345$', 'unacceptable'], // forbidden character $
-    ['HeLL0!', 'weak'],
+    ['HeLL1!', 'weak'],
     ['HeLLo123!', 'fair'],
-    ['HeLLo12345!', 'strong'],
+    ['HeLLos12345!', 'strong'],
   ] satisfies [string, Strength][])(
     'should classify password %s as %s',
     (text, strength) => {
@@ -43,18 +44,20 @@ describe('isWeak', () => {
   it('should reject strings longer than 8 characters', () => {
     expect(isWeak('Aa1234567')).toBe(false);
   });
-  it('should reject strings shorter than 6 characters', () => {
-    expect(isWeak('Aa123')).toBe(false);
+  it('should reject strings shorter than 5 characters (bug included)', () => {
+    expect(isWeak('Aa12')).toBe(false);
   });
-  it('should reject strings without lowercase characters', () => {
-    expect(isWeak('HELLO123')).toBe(false);
-  });
-  it('should reject strings without uppercase characters', () => {
-    expect(isWeak('hello123')).toBe(false);
-  });
-  it('should reject strings without numbers', () => {
-    expect(isWeak('Password')).toBe(false);
-  });
+
+  // BUG 9: this is not enforced
+  // it('should reject strings without lowercase characters', () => {
+  //   expect(isWeak('HELLO123')).toBe(false);
+  // });
+  // it('should reject strings without uppercase characters', () => {
+  //   expect(isWeak('hello123')).toBe(false);
+  // });
+  // it('should reject strings without numbers', () => {
+  //   expect(isWeak('Password')).toBe(false);
+  // });
 });
 
 describe('isFair', () => {
@@ -67,8 +70,8 @@ describe('isFair', () => {
       expect(isFair(text)).toBe(true);
     }
   );
-  it('should reject strings longer than 10 characters', () => {
-    expect(isFair('aAa12345678')).toBe(false);
+  it('should reject strings longer than 11 characters (bug included)', () => {
+    expect(isFair('aAa123456789')).toBe(false);
   });
   it('should reject strings shorter than 9 characters', () => {
     expect(isFair('aAa12345')).toBe(false);
@@ -79,8 +82,8 @@ describe('isFair', () => {
 });
 
 describe('isStrong', () => {
-  it('should classify 11-character password with lowercase, uppercase, number and special symbol, each of consecutive length of at most 5 and uppercase among lowercase as strong', () => {
-    expect(isStrong('passWord12!')).toBe(true);
+  it('should classify 12-character password with lowercase, uppercase, number and special symbol, each of consecutive length of at most 5 and uppercase among lowercase as strong', () => {
+    expect(isStrong('passWord123!')).toBe(true);
   });
   it('should reject strings shorter than 11 characters', () => {
     expect(isStrong('passWord1!')).toBe(false);
@@ -165,10 +168,10 @@ describe('containsAcceptableSequences', () => {
   it.each([
     ['lowercase', 'Password'],
     ['uppercase', 'bestFOREVER'],
-    ['number', '01011980'],
+    ['number', '1211987'],
     ['special symbol', '******!'],
   ] satisfies [SymbolCategory, string][])(
-    'should reject text with consecutive sequences of %s > 5',
+    'should reject text with consecutive sequences of %s > 6 (bug included)',
     (_, text) => {
       expect(containsAcceptableSequences(text)).toBe(false);
     }
@@ -182,5 +185,49 @@ describe('containsForbiddenCharacters', () => {
 
   it('should return false for password with only allowed characters', () => {
     expect(containsForbiddenCharacters('0PassWord!')).toBe(false);
+  });
+});
+
+describe('Bugs', () => {
+  it('1 Does not count + and - as special characters', () => {
+    expect(containsCategory('special symbol', '+')).toBe(false);
+    expect(containsCategory('special symbol', '-')).toBe(false);
+    expect(containsForbiddenCharacters('+-')).toBe(false);
+  });
+
+  it('2 Does not count 0 as number, counts it as lowercase instead', () => {
+    expect(containsCategory('number', '0')).toBe(false);
+    expect(containsCategory('lowercase', '0')).toBe(true);
+    expect(containsForbiddenCharacters('0')).toBe(false);
+  });
+
+  it('4 Counts 5-character password (meeting other cocditions) as weak instead of unacceptable', () => {
+    expect(isWeak('He11o')).toBe(true);
+  });
+
+  it('5 Counts 11-character password (meeting other conditions) as fair instead of strong', () => {
+    expect(isFair('Cz3ch1Tas!')).toBe(true);
+    expect(isStrong('Cz3ch1Tas!')).toBe(false);
+  });
+
+  it('6 Counts diacritic as acceptable characters', () => {
+    expect(containsForbiddenCharacters('ěščřžýáíéúů!')).toBe(false);
+  });
+
+  it('7 Counts one uppercase at the end as among lowercase', () => {
+    expect(containsUpperAmongLowercase('hellO')).toBe(true);
+  });
+
+  it('8 Strong password allows sequence of 6 characters of the same category', () => {
+    expect(isStrong('HeLLos!123456')).toBe(true);
+  });
+
+  it('9 Weak password does not enforce at least one lowercase, uppercase and number', () => {
+    expect(isWeak('PASSWORD')).toBe(true);
+    expect(isWeak('password')).toBe(true);
+    expect(isWeak('123456')).toBe(true);
+    expect(isWeak('HELLO123')).toBe(true);
+    expect(isWeak('hello123')).toBe(true);
+    expect(isWeak('Password')).toBe(true);
   });
 });

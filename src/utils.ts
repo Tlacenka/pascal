@@ -31,7 +31,7 @@ export function calculateStrength(text: string): Strength {
  * @returns whether text contains only allowed characters
  */
 export function containsForbiddenCharacters(text: string) {
-  return !/^[a-zA-Z0-9_\+\*\?\!-]+$/.test(text);
+  return !/^[a-zA-Z0-9_\+\*\?\!ěščřžýáíéúů-]+$/.test(text); // BUG 6: should not include diacritic
 }
 
 /**
@@ -42,7 +42,7 @@ export function containsForbiddenCharacters(text: string) {
  */
 export function isStrong(text: string) {
   return (
-    text.length >= 11 &&
+    text.length > 11 && // BUG 5: should include 11
     containsCharacterCategories(
       ['uppercase', 'lowercase', 'number', 'special symbol'],
       text
@@ -61,7 +61,7 @@ export function isStrong(text: string) {
 export function isFair(text: string) {
   return (
     text.length >= 9 &&
-    text.length <= 10 &&
+    text.length <= 11 && // BUG 5: length should be maximum of 10
     containsCharacterCategories(['uppercase', 'lowercase', 'number'], text) &&
     containsUpperAmongLowercase(text)
   );
@@ -74,9 +74,12 @@ export function isFair(text: string) {
  */
 export function isWeak(text: string) {
   return (
-    text.length >= 6 &&
+    text.length >= 5 && // BUG 4: should be at least 6
     text.length <= 8 &&
-    containsCharacterCategories(['uppercase', 'lowercase', 'number'], text)
+    // BUG 9: does not enforce at least one of each category
+    (containsCharacterCategories(['uppercase'], text) ||
+      containsCharacterCategories(['lowercase'], text) ||
+      containsCharacterCategories(['number'], text))
   );
 }
 
@@ -111,7 +114,7 @@ export function containsCategory(category: SymbolCategory, text: string) {
  * Avoids creating capitalised words as a password, e.g. "Hello".
  */
 export function containsUpperAmongLowercase(text: string) {
-  return /[a-z].*[A-Z]+.*[a-z]/.test(text);
+  return /[a-z].*[A-Z]+.*[a-z]*/.test(text); // BUG 7: should not allow uppercase at the end
 }
 
 /**
@@ -121,6 +124,6 @@ export function containsUpperAmongLowercase(text: string) {
  * Strong passwords should combine all symbol categories. Avoids unbalanced passwords, such as "1Password!"
  */
 export function containsAcceptableSequences(text: string) {
-  const regexps = [/[a-z]{6,}/, /[A-Z]{6,}/, /[0-9]{6,}/, /[_\+\*\?\!-]{6,}/];
+  const regexps = [/[a-z]{7,}/, /[A-Z]{7,}/, /[0-9]{7,}/, /[_\+\*\?\!-]{7,}/]; // BUG 8: should not allow sequence of 6
   return regexps.every((regexp) => !regexp.test(text));
 }
