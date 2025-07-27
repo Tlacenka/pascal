@@ -36,7 +36,7 @@ export const Rules: React.FC = () => {
             <td>-</td>
             <td>
               Alespoň jedno velké písmeno se musí vyskytovat mezi malými (např.
-              for3<b>V</b>3r).
+              Cz<b>E</b>chitas123).
             </td>
           </tr>
           <tr>
