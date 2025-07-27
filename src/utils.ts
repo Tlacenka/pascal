@@ -61,7 +61,6 @@ export function isStrong(text: string) {
 export function isFair(text: string) {
   return (
     text.length >= 9 &&
-    text.length <= 11 && // BUG 5: length should be maximum of 10
     containsCharacterCategories(['uppercase', 'lowercase', 'number'], text) &&
     containsUpperAmongLowercase(text)
   );
@@ -75,7 +74,6 @@ export function isFair(text: string) {
 export function isWeak(text: string) {
   return (
     text.length >= 5 && // BUG 4: should be at least 6
-    text.length <= 8 &&
     // BUG 9: does not enforce at least one of each category
     (containsCharacterCategories(['uppercase'], text) ||
       containsCharacterCategories(['lowercase'], text) ||

@@ -34,16 +34,12 @@ describe('isWeak', () => {
   it.each([
     [6, 'Hello1'],
     [7, 'Hello12'],
-    [8, 'Hello123'],
   ] satisfies [number, string][])(
     'should classify %d-character password with lowercase, uppercase and number as weak',
     (_, text) => {
       expect(isWeak(text)).toBe(true);
     }
   );
-  it('should reject strings longer than 8 characters', () => {
-    expect(isWeak('Aa1234567')).toBe(false);
-  });
   it('should reject strings shorter than 5 characters (bug included)', () => {
     expect(isWeak('Aa12')).toBe(false);
   });
@@ -70,9 +66,6 @@ describe('isFair', () => {
       expect(isFair(text)).toBe(true);
     }
   );
-  it('should reject strings longer than 11 characters (bug included)', () => {
-    expect(isFair('aAa123456789')).toBe(false);
-  });
   it('should reject strings shorter than 9 characters', () => {
     expect(isFair('aAa12345')).toBe(false);
   });
